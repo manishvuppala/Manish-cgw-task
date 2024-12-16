@@ -2,37 +2,42 @@ import { LightningElement, track } from 'lwc';
 import fetchLineItems from '@salesforce/apex/CreateInvoiceController.fetchLineItems';
 
 export default class CreateInvoice extends LightningElement {
-   urlParams = [];
-   columns = [
+    urlParams = [];
+    columns = [
     {label: 'Parameter Name', fieldName: 'key', type: 'text'},
     {label: 'Value', fieldName: 'value', type: 'text'},
-   ];
+    ];
 
-   @track lineItems = [];
-   lineItemColumns = [
+    @track lineItems = [];
+    lineItemColumns = [
     {label: 'Description', fieldName: 'description', type:'text'},
     {label: 'Quantity', fieldName: 'quantity', type:'number'},
     {label: 'Unit Price', fieldName: 'unitPrice', type: 'currency'},
     {label: 'Amount', fieldName: 'amount', type: 'currency'},
-   ];
+    ];
 
-   error;
+    error;
 
-   connectedCallback() {
-       const queryParams = new URLSearchParams(window.location.search);
+    jsonInvoice = null;
+    jsonScreen = false;
 
-       const params = {};
-       queryParams.forEach((value, key) => {
+    params = {};
+
+    connectedCallback() {
+        const queryParams = new URLSearchParams(window.location.search);
+
+        
+        queryParams.forEach((value, key) => {
         const updatedKey = key.startsWith('c__') ? key.substring(3) : key;
-        params[updatedKey] = value
+        this.params[updatedKey] = value;
         this.urlParams.push({key: updatedKey, value});
-       });
+        });
 
-       this.fetchLineItems(params);
-       //console.log(this.lineItems)
-   }
+        this.fetchLineItems(this.params);
+        //console.log(this.lineItems)
+    }
 
-   fetchLineItems(params){
+    fetchLineItems(params){
         const {
             origin_record,
             child_relationship_name, 
@@ -70,5 +75,30 @@ export default class CreateInvoice extends LightningElement {
                 this.error = `Error fetching items : ${error.body ? error.body.message : error}`;
             })
         //console.log(JSON.Parse(JSON.stringify(this.lineItems)));
-   }
+    }
+
+    handleClick(){
+        console.log('params : ',JSON.stringify(this.params));
+        const jsonInvoice = {
+            "Type": "ACCREC",
+            "Contact": {
+                "ContactID": "0000000",
+            },
+            "Account": this.params.account,
+            "Date": this.params.invoice_date,//.toISOString().split('T')[0],
+            "DueDate": this.params.invoice_due_date,//.toISOString().split('T')[0],
+            Reference: this.params.origin_record,
+            Total: this.lineItems.reduce((sum, item) => sum+item.amount, 0),
+            "LineItems": this.lineItems.map((item) => ({
+                            "Description": item.description,
+                            "Quantity": item.quantity,
+                            "UnitAmount": item.unitPrice,
+                            "LineAmount": item.amount,
+                    })),
+        };
+        //console.log(jsonInvoice);
+        this.jsonInvoice = JSON.stringify(jsonInvoice, null, 2);
+        console.log('jsonInvoice String : '+ this.jsonInvoice);
+        this.jsonScreen = true;
+    }
 }

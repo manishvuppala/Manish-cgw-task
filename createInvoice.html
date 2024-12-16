@@ -1,26 +1,39 @@
 <template>
-   <lightning-card title="Create Invoice">
-      <div class="slds-m-around_medium">
-        <lightning-datatable
-            key-field="key"
-            data={urlParams}
-            columns={columns}
+   <template if:false={jsonScreen}>
+      <lightning-card title="Create Invoice" icon-name="standard:account">
+         <div class="slds-m-around_medium">
+         <lightning-datatable
+               key-field="key"
+               data={urlParams}
+               columns={columns}
+               hide-checkbox-column>
+            </lightning-datatable>
+         </div>
+      </lightning-card>
+
+      <lightning-card title="Line Items">
+         <div class="slds-m-around_medium">
+         <lightning-datatable
+            key-field="description"
+            data={lineItems}
+            columns={lineItemColumns}
             hide-checkbox-column>
          </lightning-datatable>
-      </div>
-   </lightning-card>
+         </div>
+         <template if:true={error}>
+            {error}
+         </template>
+         <p slot="footer">
+         <lightning-button variant="brand" label="Show JSON" title="json" onclick={handleClick}></lightning-button></lightning-button>
+         </p>
+      </lightning-card>
+   </template>
 
-   <lightning-card title="Line Items">
-      <div class="slds-m-around_medium">
-      <lightning-datatable
-         key-field="description"
-         data={lineItems}
-         columns={lineItemColumns}
-         hide-checkbox-column>
-      </lightning-datatable>
-      </div>
-      <template if:true={error}>
-         {error}
-      </template>
-   </lightning-card>
+   <template if:true={jsonScreen}>
+      <lightning-card  variant="Narrow"  title="Invoice JSON" icon-name="standard:apex">
+         <div class="slds-m-around_medium">
+            <pre class="slds-p-horizontal_small">{jsonInvoice}</pre>
+         </div>
+      </lightning-card>
+   </template>
 </template>
