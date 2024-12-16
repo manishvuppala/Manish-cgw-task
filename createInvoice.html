@@ -1,0 +1,26 @@
+<template>
+   <lightning-card title="Create Invoice">
+      <div class="slds-m-around_medium">
+        <lightning-datatable
+            key-field="key"
+            data={urlParams}
+            columns={columns}
+            hide-checkbox-column>
+         </lightning-datatable>
+      </div>
+   </lightning-card>
+
+   <lightning-card title="Line Items">
+      <div class="slds-m-around_medium">
+      <lightning-datatable
+         key-field="description"
+         data={lineItems}
+         columns={lineItemColumns}
+         hide-checkbox-column>
+      </lightning-datatable>
+      </div>
+      <template if:true={error}>
+         {error}
+      </template>
+   </lightning-card>
+</template>
