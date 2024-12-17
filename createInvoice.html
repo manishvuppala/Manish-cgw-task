@@ -24,7 +24,7 @@
             {error}
          </template>
          <p slot="footer">
-         <lightning-button variant="brand" label="Show JSON" title="json" onclick={handleClick}></lightning-button></lightning-button>
+         <lightning-button variant="brand" label="Show JSON" title="json" onclick={handleShowJSON}></lightning-button></lightning-button>
          </p>
       </lightning-card>
    </template>
@@ -34,6 +34,12 @@
          <div class="slds-m-around_medium">
             <pre class="slds-p-horizontal_small">{jsonInvoice}</pre>
          </div>
+         <template if:true={error}>
+            {error}
+         </template>
+         <p slot="footer">
+            <lightning-button variant="brand" label="Proceed to Create Invoice" title="createInvoice" onclick={handleCreateInvoice}></lightning-button></lightning-button>
+         </p>
       </lightning-card>
    </template>
 </template>

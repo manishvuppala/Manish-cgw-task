@@ -1,7 +1,9 @@
 import { LightningElement, track } from 'lwc';
 import fetchLineItems from '@salesforce/apex/CreateInvoiceController.fetchLineItems';
+import createInvoiceData from '@salesforce/apex/CreateInvoiceController.createInvoiceData';
+import { NavigationMixin } from 'lightning/navigation';
 
-export default class CreateInvoice extends LightningElement {
+export default class CreateInvoice extends NavigationMixin(LightningElement) {
     urlParams = [];
     columns = [
     {label: 'Parameter Name', fieldName: 'key', type: 'text'},
@@ -28,9 +30,9 @@ export default class CreateInvoice extends LightningElement {
 
         
         queryParams.forEach((value, key) => {
-        const updatedKey = key.startsWith('c__') ? key.substring(3) : key;
-        this.params[updatedKey] = value;
-        this.urlParams.push({key: updatedKey, value});
+            const updatedKey = key.startsWith('c__') ? key.substring(3) : key;
+            this.params[updatedKey] = value;
+            this.urlParams.push({key: updatedKey, value});
         });
 
         this.fetchLineItems(this.params);
@@ -77,8 +79,8 @@ export default class CreateInvoice extends LightningElement {
         //console.log(JSON.Parse(JSON.stringify(this.lineItems)));
     }
 
-    handleClick(){
-        console.log('params : ',JSON.stringify(this.params));
+    handleShowJSON(){
+        //console.log('params : ',JSON.stringify(this.params));
         const jsonInvoice = {
             "Type": "ACCREC",
             "Contact": {
@@ -98,7 +100,30 @@ export default class CreateInvoice extends LightningElement {
         };
         //console.log(jsonInvoice);
         this.jsonInvoice = JSON.stringify(jsonInvoice, null, 2);
-        console.log('jsonInvoice String : '+ this.jsonInvoice);
+        //console.log('jsonInvoice String : '+ this.jsonInvoice);
         this.jsonScreen = true;
+    }
+
+    handleCreateInvoice(){
+        //console.log('jsonInvoice : ', this.jsonInvoice);
+        createInvoiceData({jsonInvoice : this.jsonInvoice})
+        .then((invoiceId) => {
+            if(invoiceId){
+                console.log('InvoiceId : ',invoiceId);
+                this[NavigationMixin.Navigate]({
+                    type: 'standard__recordPage',
+                    attributes: {
+                        recordId: invoiceId,
+                        actionName: 'view'
+                    }
+                });
+            }
+            else{
+                this.error = `No invoiceId returned from Apex.`;
+            }
+        })
+        .catch((error) =>{
+            this.error = `Error in navigating to Invoice record page : ${error.body ? error.body.message : error}`;
+        })
     }
 }
